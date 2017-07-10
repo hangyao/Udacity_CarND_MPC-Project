@@ -43,7 +43,7 @@ double polyeval(Eigen::VectorXd coeffs, double x) {
 
 // Fit a polynomial.
 // Adapted from
-// https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L676-L716
+// https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L684-L725
 Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
                         int order) {
   assert(xvals.size() == yvals.size());

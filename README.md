@@ -3,6 +3,53 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Implementation
+
+**Model Predictive Control (MPC)** is an advanced method for process control which relies on dynamic models of the process. Different from previously implemented PID controller, MPC controller is able to anticipate future envents and can take control actions accordingly. Indeed, future time steps are taking into account while optimizing the current time step.
+
+### The Model
+
+The MPC controller framework consists of the following key components:
+
+- **Trajectory**: It is taken into consideration during the optimization. It consists of parameters of a number of time steps **N** spaced out by a time **dt**. The number of optimized variables is direct proportional to **N**, therefore it must be considered with computational constraints.
+
+- **Vehicle Model**: A set of equations that describe system behavior and update time steps. In this project, I used a simplified kinematic model (aka. bicycle model) with 6 coefficients:
+  - **x**: car position (x-axis)
+  - **y**: car position (y-axis)
+  - **psi**: car's heading direction
+  - **v**: car's velocity
+  - **cte**: cross-track error
+  - **epsi**: orientation error
+
+  Vehicle model update equations are implemented at lines 66-71 in *MPC.cpp*.
+
+- **Constrains**: They are necessary for model actuators' response. In this model the following constraints are set:
+  - **Steering**: ranged from [-25&deg;, 25&deg;]
+  - **Acceleration**: ranged from [-1, 1]
+
+- **Cost Function**: The whole control process is based on optimization of the cost function. Usually the cost function is made of the sum of different terms. Besides the main terms derived from reference values such as cross-track **cte** or heading error **cpsi**, other regularization terms are also introduced to ensure the smoothness of the controller response.
+
+  The cost function is implemented at lines 45-64 in *MPC.cpp*.
+
+### Trajectory Parameters
+
+Timestep Length **N** and Elapsed Duration **dt** are rudimentary parameters in the optimization process. The prediction horizon **T = N &times; dt** is computed during the optimization. These two parameters were tuned with the following rule of thumbs:
+
+- Large **dt** results in less frequent actuations, which can cause difficulties to follow a continuous reference trajectory (aka. discretization error).
+- Large **T** can be benefit to the control process, however predicting too far in the future is not practical and meaningful in real-world scenarios.
+- Large **T** and small **dt** lead to large **N**. As mentioned above, the number of optimized variables is direct proportional to **N**, therefore it also leads to higher computational cost.
+
+In this project, these parameters are empirically set with a trial-and-error manner. Visual inspection is used to observe vehicle behaviors in the simulator. The final parameters are: **N = 10**, **dt = 0.1**, for **T = 1s** in the future.
+
+### Polynomial Fitting
+The polynomial fitting algorithm is referred to this method in the codebase of [Julia Math](https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L684-L725). It is implemented at lines 51-66 in *main.cpp*.
+
+The method of mapping a standard vector to an Eigen vector is referred to this [forum post](https://forum.kde.org/viewtopic.php?f=74&t=94839#p194926). It is implemented at lines 107 and 108 in *main.cpp*.
+
+### MPC with Latency
+In order to mimic real driving conditions where the vehicle actuates the commands instantly, a 100 milliseconds latency delay is introduced before sending the data message to the simulator. It is implemented at line 177 in *main.cpp*.
+
+---
 ## Dependencies
 
 * cmake >= 3.5
@@ -19,7 +66,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Run either `install-mac.sh` or `install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -31,7 +78,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Mac: `brew install ipopt`
   * Linux
     * You will need a version of Ipopt 3.12.1 or higher. The version available through `apt-get` is 3.11.x. If you can get that version to work great but if not there's a script `install_ipopt.sh` that will install Ipopt. You just need to download the source from the Ipopt [releases page](https://www.coin-or.org/download/source/Ipopt/) or the [Github releases](https://github.com/coin-or/Ipopt/releases) page.
-    * Then call `install_ipopt.sh` with the source directory as the first argument, ex: `bash install_ipopt.sh Ipopt-3.12.1`. 
+    * Then call `install_ipopt.sh` with the source directory as the first argument, ex: `bash install_ipopt.sh Ipopt-3.12.1`.
   * Windows: TODO. If you can use the Linux subsystem and follow the Linux instructions.
 * [CppAD](https://www.coin-or.org/CppAD/)
   * Mac: `brew install cppad`
