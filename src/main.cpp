@@ -91,8 +91,8 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-          // double steer_value = j[1]["steering_angle"];
-          // double throttle_value = j[1]["throttle"];
+          double delta = j[1]["steering_angle"];
+          double a = j[1]["throttle"];
           double x_rotation = cos(-psi);
           double y_rotation = sin(-psi);
           for (int i = 0; i < ptsx.size(); i++) {
@@ -108,9 +108,20 @@ int main() {
           Eigen::Map<Eigen::VectorXd> ptsy_vector(&ptsy[0], n_x);
           auto fit_coeffs = polyfit(ptsx_vector, ptsy_vector, 3);
           double cte = polyeval(fit_coeffs, 0);
-          double epsilon_psi = -atan(fit_coeffs[1]);
+          double epsi = -atan(fit_coeffs[1]);
+
+          // latency
+          const double dt = 0.1;
+          const double Lf = 2.67;
+          double pred_px = 0.0 + v * dt; // cos(0) = 1
+          const double pred_py = 0.0; // sin(0) = 0
+          double pred_psi = 0.0 + v * -delta / Lf * dt;
+          double pred_v = v + a * dt;
+          double pred_cte = cte + v * sin(epsi) * dt;
+          double pred_epsi = epsi + v * -delta / Lf * dt;
+
           Eigen::VectorXd state(n_x);
-          state << 0, 0, 0, v, cte, epsilon_psi;
+          state << pred_px, pred_py, pred_psi, pred_v, pred_cte, pred_epsi;
           auto mpc_solution = mpc.Solve(state, fit_coeffs);
           vector<double> next_x_vector;
           vector<double> next_y_vector;

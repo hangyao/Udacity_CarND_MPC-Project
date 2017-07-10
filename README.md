@@ -47,7 +47,9 @@ The polynomial fitting algorithm is referred to this method in the codebase of [
 The method of mapping a standard vector to an Eigen vector is referred to this [forum post](https://forum.kde.org/viewtopic.php?f=74&t=94839#p194926). It is implemented at lines 107 and 108 in *main.cpp*.
 
 ### MPC with Latency
-In order to mimic real driving conditions where the vehicle actuates the commands instantly, a 100 milliseconds latency delay is introduced before sending the data message to the simulator. It is implemented at line 174 in *main.cpp*.
+In order to mimic real driving conditions where the vehicle actuates the commands instantly, a 100 milliseconds latency delay is introduced before sending the data message to the simulator. It is implemented at line 185 in *main.cpp*.
+
+In order to deal with latency, *state* is predicted one time step ahead before feeding it to the solver. It is implemented at lines 114-121 in *main.cpp*.
 
 ---
 ## Dependencies
